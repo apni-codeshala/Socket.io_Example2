@@ -2,8 +2,11 @@ var express = require('express');
 var app = express();
 var http = require('http')
 var socketIO = require('socket.io');
+var cors = require('cors');
 var server;
 var io;
+
+app.use(cors());
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -22,9 +25,9 @@ io = socketIO(server);
 var sockets = [];
 io.on('connection', function (socket) {
     sockets.push(socket);
-    socket.on('message', function (message) {
+    socket.on('message', function (toReceived) {
         for (var i = 0; i < sockets.length; i++) {
-            sockets[i].send(message);
+            sockets[i].send(toReceived);
         }
     });
     socket.on('disconnect', function () {
