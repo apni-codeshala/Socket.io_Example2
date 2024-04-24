@@ -1,37 +1,179 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
-<head></head>
+<head>
+    <title>Chat Local</title>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #3d3d3d;
+            height: 100vh;
+            padding: 10px;
+            padding-bottom: 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #name-set {
+            height: 34px;
+            padding: 10px;
+        }
+
+        #msg {
+            width: 100%;
+        }
+
+        #messages {
+            height: 91vh;
+            overflow-y: auto;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .messageInput {
+            width: 100%;
+            height: 35px;
+            border-radius: 5px;
+            margin-right: 10px;
+            padding-left: 10px;
+            scrollbar-width: 15px;
+        }
+
+        #my-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 5vh;
+            padding: 0px;
+        }
+
+        button {
+            padding: 2px 10px;
+            border-radius: 5px;
+            height: 35px;
+        }
+
+        #msg {
+            display: none;
+        }
+
+        #messages {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-block {
+            background-color: #DCF8C6;
+            padding: 10px;
+            margin-bottom: 5px;
+            max-width: 100%; 
+        }
+
+        .message-received {
+            background-color: #E5E5EA;
+            border-radius: 0px 10px 10px 10px;
+        }
+
+        .message-sent {
+            text-align: right; 
+            border-radius: 10px 0px 10px 10px;
+        }
+
+        .sender-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+    </style>
+</head>
 
 <body>
-    <form id="my-form">
-        <textarea id="message" placeholder="Message"></textarea>
-        <p>
-            <button type="submit">Send</button>
-        </p>
-    </form>
-    <div id="messages"></div>
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <div id="name">
+        <form id="name-form">
+            <input type="text" id="name-set" placeholder="Enter your name">
+            <button>Submit</button>
+        </form>
+    </div>
+    <div id="msg">
+        <div id="messages"></div>
+        <form id="my-form">
+            <input type="text" id="message" class="messageInput" placeholder="Message"></input>
+            <button type="submit">SEND</button>
+        </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io('http://localhost:5000');
+        var name = ''
         socket.on('connect', function () {
-            document
-                .getElementById('my-form')
-                .addEventListener('submit', function (e) {
-                    e.preventDefault();
 
-                    socket.send(document.getElementById('message').value);
-                });
+            document.getElementById('name-form').addEventListener('submit', function (e) {
+                var nameElement = document.getElementById('name');
+                var msgElement = document.getElementById('msg');
+                e.preventDefault();
+                name = document.getElementById('name-set').value.trim();
+                console.log(name);
+                nameElement.style.display = 'none';
+                msgElement.style.display = 'block';
+            });
+
+            document.getElementById('my-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var messageInput = document.getElementById('message');
+                var message = messageInput.value.trim();
+                var toSent = {
+                    name, 
+                    message
+                };
+                if (message !== '') {
+                    socket.emit('message', toSent); 
+                    messageInput.value = ''; 
+                }
+            });
+
             socket.on('message', function (message) {
-                var messageNode =
-                    document.createTextNode(message),
-                    messageElement =
-                        document.createElement('p');
-                messageElement.appendChild(messageNode);
+                createMessage(
+                    message.name == name ? 'You' : message.name,
+                    message.message, 
+                    message.name == name
+                );
 
-                document.getElementById('messages').appendChild(messageElement);
+                // Scroll to the bottom of the messages container
+                var messagesContainer = document.getElementById('messages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             });
         });
+
+        function createMessage(sender, content, isSent) {
+            console.log(isSent);
+            var messageContainer = document.getElementById('messages');
+
+            var messageDiv = document.createElement('div');
+            messageDiv.classList.add('message-block');
+            messageDiv.classList.add(isSent ? 'message-sent' : 'message-received');
+
+            var senderNameDiv = document.createElement('div');
+            senderNameDiv.classList.add('sender-name');
+            senderNameDiv.textContent = sender;
+
+            var contentDiv = document.createElement('div');
+            contentDiv.textContent = content;
+
+            messageDiv.appendChild(senderNameDiv);
+            messageDiv.appendChild(contentDiv);
+
+            messageContainer.appendChild(messageDiv);
+        }
+
     </script>
 </body>
 
