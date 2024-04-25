@@ -31,6 +31,34 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('disconnect', function () {
-        console.log('The socket disconnected');
+        for (var i = 0; i < sockets.length; i++) {
+            if (sockets[i].id === socket.id) {
+                sockets.splice(i, 1);   // To remove the socket added to array sokets at the time of joining of user to don't do the unnecessary sending of message to unjoined user
+            }
+        }
+        console.log('The socket disconnected. There are ' +
+            sockets.length + ' connected sockets');
     });
 });
+
+
+
+/**
+ * To start debugging of socket.io in server side
+ * 
+ * Run the command to start the server with debugging
+ * DEBUG=* node server.js
+ * 
+ * If you want always to run the server with debugging so 
+ * export DEBUG=*
+ * After wards always when you start the server it aways start with debugging
+ * node server.js
+ * 
+ * If you want to disable the debugging setting from always
+ * export DEBUG=null 
+ * 
+ * Similar to client-side logging, you can set the logging type to something other than the
+ * wildcard. This allows you to only get debugging messages on the topic you want to listen to.
+ * DEBUG=socket.io:server node server
+ *
+ */
