@@ -121,7 +121,6 @@
                 var msgElement = document.getElementById('msg');
                 e.preventDefault();
                 name = document.getElementById('name-set').value.trim();
-                console.log(name);
                 nameElement.style.display = 'none';
                 msgElement.style.display = 'block';
             });
@@ -154,7 +153,6 @@
         });
 
         function createMessage(sender, content, isSent) {
-            console.log(isSent);
             var messageContainer = document.getElementById('messages');
 
             var messageDiv = document.createElement('div');
